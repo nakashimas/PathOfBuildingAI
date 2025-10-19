@@ -6,6 +6,8 @@ local requestPath = os.getenv("POB_AI_REQUEST")
 local responsePath = os.getenv("POB_AI_RESPONSE")
 local lastModified = nil
 
+Build = LoadModule("Modules/Build.lua")
+
 MCP = {}
 
 function getFileSignature(path)
@@ -62,17 +64,28 @@ function MCP.listenServer()
 end
 
 function MCP.execute(req)
-    if req.endpoint == "loadBuild" then
-        MCP.respond({})
-    elseif req.endpoint == "saveBuild" then
-        MCP.respond({})
+    local response = {}
+
+    if req.command == "loadBuild" then
+        main:SetMode("BUILD", req.fileName, req.buildName)
+        response["status"] = 200
+    elseif req.command == "saveBuild" then
+        main.modes["BUILD"].dbFileName = req.fileName
+        main.modes["BUILD"].buildName = req.buildName
+        main.modes["BUILD"].dbFileSubPath = req.fileSubPath or ""
+        main.modes["BUILD"]:SaveDBFile()
+        response["status"] = 200
     end
+
+    MCP.respond(response)
+    return response
 end
 
 function MCP.respond(obj)
     local file = io.open(responsePath, "w")
     if file then
         -- HASH randomize
+        math.randomseed(os.time())
         obj["_rand"] = tostring(math.random())
 
         local content = json.encode(obj)
