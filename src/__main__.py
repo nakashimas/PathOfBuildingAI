@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 
 from src.lua_scripts.apply_patch import apply_patch
@@ -57,6 +58,7 @@ def main():
     args = parser.parse_args()
 
     if args.mode == "cli":
+        logging.disable(logging.CRITICAL)
         if args.sub_mode == "start":
             pob = PathOfBuildingCli(force_update=True)
             pob.start()
@@ -67,19 +69,36 @@ def main():
             print(res)
 
     elif args.mode == "chat":
+        logging.disable(logging.CRITICAL)
         raise NotImplementedError("chat is TBD")
 
     elif args.mode == "cui":
         try:
             with PathOfBuildingCli(force_update=True) as pob:
+                logging.disable(logging.CRITICAL)
                 print("Input Commands / Press Ctrl + C to Exit")
                 while True:
-                    cm = input("I > ")
-                    # TBD
-                    if cm:
-                        print(f"O >> command not found {cm}")
+                    term = input("I > ")
+                    if term:
+                        commands = term.split(" ")
+                        if (
+                            commands[0] == "load"
+                            and len(commands) > 2
+                            and commands[1] == "build"
+                        ):
+                            res = pob.load_build(commands[2])
+                            print(f"O >> {res}")
+                        elif (
+                            commands[0] == "save"
+                            and len(commands) > 2
+                            and commands[1] == "build"
+                        ):
+                            res = pob.save_build(commands[2])
+                            print(f"O >> {res}")
+                        else:
+                            print(f"O >> command not found {term}")
         except KeyboardInterrupt:
-            print("O >> exit")
+            print("\nO >> exit")
         except Exception:
             raise
 

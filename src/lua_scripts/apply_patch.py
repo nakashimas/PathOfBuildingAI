@@ -4,6 +4,7 @@ from src.utils.constant import (
     FILE_MCP_LUA_SOURCE,
     FILE_MCP_LUA,
 )
+from src.utils.log import LOG_HANDLER
 
 MAIN_INIT_INSERT_BLOCK = [
     "",
@@ -15,7 +16,7 @@ MAIN_INIT_INSERT_BLOCK = [
 
 def patch_loadmodule_block(src: str) -> str:
     if 'LoadModule("Modules/MCP")' in src:
-        print("[✓] LoadModule('Modules/MCP') already present.")
+        LOG_HANDLER.info("[✓] LoadModule('Modules/MCP') already present.")
         return src
 
     lines = src.splitlines()
@@ -28,7 +29,9 @@ def patch_loadmodule_block(src: str) -> str:
                 inside_block = True
         elif inside_block:
             new_lines.append('LoadModule("Modules/MCP")')
-            print(f"[+] Inserted LoadModule('Modules/MCP') Line {i + 1}")
+            LOG_HANDLER.info(
+                f"[+] Inserted LoadModule('Modules/MCP') Line {i + 1}",
+            )
             inside_block = False
 
         new_lines.append(line)
@@ -38,7 +41,7 @@ def patch_loadmodule_block(src: str) -> str:
 
 def patch_main_init(src: str) -> str:
     if "MCP.startServer" in src:
-        print("[✓] MCP.startServer() already hooked.")
+        LOG_HANDLER.info("[✓] MCP.startServer() already hooked.")
         return src
 
     lines = src.splitlines()
@@ -65,7 +68,9 @@ def patch_main_init(src: str) -> str:
     # Skip if startServer is already inside the function body
     func_body = "\n".join(lines[func_start_idx:insert_idx])
     if "MCP.startServer" in func_body:
-        print("[✓] MCP.startServer() already present inside Main:Init()")
+        LOG_HANDLER.info(
+            "[✓] MCP.startServer() already present inside Main:Init()",
+        )
         return src
 
     # Construct the new line list
@@ -76,8 +81,10 @@ def patch_main_init(src: str) -> str:
             # Insert just before the 'end' line
             new_lines.extend(MAIN_INIT_INSERT_BLOCK)
 
-    print("[+] Hooked MCP.startServer() into Main:Init() ")
-    print(f"    before line {insert_idx + 1}")
+    LOG_HANDLER.info(
+        "[+] Hooked MCP.startServer() into Main:Init() "
+        + f"before line {insert_idx + 1}"
+    )
     return "\n".join(new_lines)
 
 
@@ -91,17 +98,17 @@ def patch_main_lua():
     src = patch_main_init(src)
 
     FILE_MAIN_LUA.write_text(src, encoding="utf-8")
-    print("[✓] Main.lua patch complete.")
+    LOG_HANDLER.info("[✓] Main.lua patch complete.")
 
 
 def patch_mcp_lua(force: bool = False):
     if FILE_MCP_LUA.exists() and not force:
-        print("[✓] MCP.lua already exists.")
+        LOG_HANDLER.info("[✓] MCP.lua already exists.")
     else:
         shutil.copy(FILE_MCP_LUA_SOURCE, FILE_MCP_LUA)
-        print("[✓] Create MCP.lua file.")
+        LOG_HANDLER.info("[✓] Create MCP.lua file.")
 
-    print("[✓] MCP.lua patch complete.")
+    LOG_HANDLER.info("[✓] MCP.lua patch complete.")
 
 
 def apply_patch(force: bool = False):

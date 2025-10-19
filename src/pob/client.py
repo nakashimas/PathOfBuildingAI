@@ -1,4 +1,6 @@
 import hashlib
+import json
+import random
 import subprocess
 import time
 import importlib
@@ -16,6 +18,7 @@ from src.utils.constant import (
     FILE_TEMP_RESPONSE,
     ROOT,
 )
+from src.utils.log import LOG_HANDLER
 
 
 class PathOfBuilding:
@@ -42,25 +45,29 @@ class PathOfBuilding:
     def __enter__(self):
         if self.pid is None:
             self.start()
-            print(f"Start Path of Building with PID={self.process.pid}")
+            LOG_HANDLER.info(
+                f"Start Path of Building with PID={self.process.pid}",
+            )
         else:
-            print(f"Attach to existing Path of Building PID={self.pid}")
+            LOG_HANDLER.info(
+                f"Attach to existing Path of Building PID={self.pid}",
+            )
         return self
 
     def __exit__(self, *_):
         if self.pid is not None:
-            print("Detach from external process (not terminating).")
+            LOG_HANDLER.warning(
+                "Detach from external process (not terminating).",
+            )
             return
 
         if self.process and self.process.poll() is None:
-            print("Exit Path of Building")
+            LOG_HANDLER.info("Exit Path of Building")
             self.process.terminate()
             try:
                 self.process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                print("____ Exit Timeout")
                 self.process.kill()
-            print("____ done")
 
     @classmethod
     def get_file_hash(cls, path: Path) -> str:
@@ -94,11 +101,20 @@ class PathOfBuilding:
         if not self.is_running():
             raise RuntimeError("Path of Building is Not Running")
 
-        self.request_command_file.write_text(command, encoding="utf-8")
+        try:
+            command_json = json.loads(command)
+            command_json["_rand"] = str(random.random())
+            command = json.dumps(command_json)
+        except Exception:
+            # TODO: Invalid command Error Handling
+            raise
+
         self._last_response_hash = self.get_file_hash(
             self.response_command_file,
         )
-        print(f"Command sent: {command}")
+
+        self.request_command_file.write_text(command, encoding="utf-8")
+        LOG_HANDLER.info(f"Command sent: {command}")
 
     def read_response(self) -> str:
         if self.response_command_file.exists():
