@@ -6,9 +6,30 @@ local requestPath = os.getenv("POB_AI_REQUEST")
 local responsePath = os.getenv("POB_AI_RESPONSE")
 local lastModified = nil
 
+LoadModule("Modules/BuildSiteTools")
 Build = LoadModule("Modules/Build.lua")
 
 MCP = {}
+
+local getExportSitesFromImportList = function()
+    local exportWebsites = { }
+    for k,v in pairs(buildSites.websiteList) do
+        -- if entry has fields needed for Export
+        if buildSites.websiteList[k].postUrl and buildSites.websiteList[k].postFields and buildSites.websiteList[k].codeOut then
+            table.insert(exportWebsites, v)
+        end
+    end
+    return exportWebsites
+end
+local exportWebsitesList = getExportSitesFromImportList()
+
+local getExportSiteFromImportList = function(urlText)
+    for j=1,#buildSites.websiteList do
+        if urlText:match(buildSites.websiteList[j].matchURL) then
+            return buildSites.websiteList[j]
+        end
+    end
+end
 
 function getFileSignature(path)
     local f = io.open(path, "rb")
@@ -75,6 +96,23 @@ function MCP.execute(req)
         main.modes["BUILD"].dbFileSubPath = req.fileSubPath or ""
         main.modes["BUILD"]:SaveDBFile()
         response["status"] = 200
+    elseif req.command == "downloadBuild" then
+		buildSites.DownloadBuild(
+            req.link,
+            getExportSiteFromImportList(req.link),
+            function(isSuccess, data, importLink)
+                if not isSuccess then
+                    main:SetMode("BUILD", false, data)
+                else
+                    local xmlText = Inflate(common.base64.decode(data:gsub("-","+"):gsub("_","/")))
+                    main:SetMode("BUILD", false, req.buildName or "Imported Build", xmlText, false, importLink)
+                    main.newModeChangeToTree = true
+                end
+            end
+        )
+        response["status"] = 200
+    elseif req.command == "uploadBuild" then
+        -- TBD
     end
 
     MCP.respond(response)

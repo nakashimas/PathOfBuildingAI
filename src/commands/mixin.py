@@ -14,3 +14,9 @@ class CommandMixin:
         build_name: Optional[str],
         file_sub_path: Optional[str],
     ) -> dict: ...
+
+    def download_build(
+        self,
+        link: str,
+        build_name: Optional[str],
+    ) -> dict: ...

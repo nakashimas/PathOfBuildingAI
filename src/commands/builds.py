@@ -45,3 +45,21 @@ def save_build(
     )
 
     return json.loads(result)
+
+
+def download_build(
+    pob: PathOfBuilding,
+    link: str,
+    build_name: str = None,
+):
+    result = pob.send_and_wait(
+        json.dumps(
+            {
+                "command": "downloadBuild",
+                "link": link,
+                "buildName": build_name,
+            }
+        ),
+    )
+
+    return json.loads(result)
