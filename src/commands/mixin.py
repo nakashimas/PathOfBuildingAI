@@ -20,3 +20,9 @@ class CommandMixin:
         link: str,
         build_name: Optional[str],
     ) -> dict: ...
+
+    def upload_build(
+        self,
+        website_id: int,
+        with_code: Optional[bool],
+    ) -> dict: ...

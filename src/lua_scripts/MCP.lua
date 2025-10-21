@@ -85,7 +85,7 @@ function MCP.listenServer()
 end
 
 function MCP.execute(req)
-    local response = {}
+    response = {}
 
     if req.command == "loadBuild" then
         main:SetMode("BUILD", req.fileName, req.buildName)
@@ -112,7 +112,10 @@ function MCP.execute(req)
         )
         response["status"] = 200
     elseif req.command == "uploadBuild" then
-        -- TBD
+        local buildCode = common.base64.encode(Deflate(main.modes["BUILD"]:SaveDB("code"))):gsub("+","-"):gsub("/","_")
+        response["code"] = buildCode
+        response["url"] = "NA"
+        response["status"] = 200
     end
 
     MCP.respond(response)
