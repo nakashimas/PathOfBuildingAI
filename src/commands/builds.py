@@ -95,3 +95,10 @@ def upload_build(
     result["url"] = website_info["linkURL"].format(response)
 
     return result
+
+
+def create_build(
+    pob: PathOfBuilding,
+    build_name: str = "New AI Build",
+):
+    return load_build(pob, None, build_name)

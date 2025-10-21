@@ -26,3 +26,8 @@ class CommandMixin:
         website_id: int,
         with_code: Optional[bool],
     ) -> dict: ...
+
+    def create_build(
+        self,
+        build_name: Optional[str],
+    ) -> dict: ...
