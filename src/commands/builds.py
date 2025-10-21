@@ -1,4 +1,6 @@
 import json
+import glob
+
 from src.pob.client import PathOfBuilding
 from src.commands.common import file_name_to_build_name
 from src.utils.upload_build_code import upload_build_code, WEBSITE_LIST
@@ -105,3 +107,33 @@ def create_build(
     build_name: str = "New AI Build",
 ):
     return load_build(pob, None, build_name)
+
+
+def get_build_folder(
+    pob: PathOfBuilding,
+):
+    result = pob.send_and_wait(
+        json.dumps(
+            {
+                "command": "getBuildFolder",
+            }
+        ),
+    )
+
+    return json.loads(result)
+
+
+def list_build(
+    pob: PathOfBuilding,
+    prefix: str = "",
+    suffix: str = ".xml",
+):
+    res: dict = get_build_folder(pob)
+    save_files = []
+
+    for i in glob.glob(res.get("buildFolder") + prefix + "*" + suffix):
+        save_files.append(i)
+
+    res["buildSaveFiles"] = save_files
+
+    return res

@@ -116,6 +116,9 @@ function MCP.execute(req)
         response["code"] = buildCode
         response["url"] = "NA"
         response["status"] = 200
+    elseif req.command == "getBuildFolder" then
+        response["buildFolder"] = main.buildPath
+        response["status"] = 200
     end
 
     MCP.respond(response)

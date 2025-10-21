@@ -31,3 +31,13 @@ class CommandMixin:
         self,
         build_name: Optional[str],
     ) -> dict: ...
+
+    def get_build_folder(
+        self,
+    ) -> dict: ...
+
+    def list_build(
+        self,
+        prefix: Optional[str],
+        suffix: Optional[str],
+    ) -> dict: ...
