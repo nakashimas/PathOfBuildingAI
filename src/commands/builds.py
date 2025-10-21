@@ -1,6 +1,9 @@
 import json
+import glob
+
 from src.pob.client import PathOfBuilding
 from src.commands.common import file_name_to_build_name
+from src.utils.upload_build_code import upload_build_code, WEBSITE_LIST
 
 
 def load_build(
@@ -45,3 +48,92 @@ def save_build(
     )
 
     return json.loads(result)
+
+
+def download_build(
+    pob: PathOfBuilding,
+    link: str,
+    build_name: str = None,
+):
+    result = pob.send_and_wait(
+        json.dumps(
+            {
+                "command": "downloadBuild",
+                "link": link,
+                "buildName": build_name,
+            }
+        ),
+    )
+
+    return json.loads(result)
+
+
+def upload_build(
+    pob: PathOfBuilding,
+    website_id: int,
+    with_code: bool = False,
+):
+    if len(WEBSITE_LIST) > website_id:
+        return {"error": "Invalid website id", "_rand": "0", "status": 500}
+
+    result = pob.send_and_wait(
+        json.dumps(
+            {
+                "command": "uploadBuild",
+                "websiteId": website_id,
+            }
+        ),
+    )
+
+    result = dict(json.loads(result))
+
+    website_info = WEBSITE_LIST[website_id - 1]
+    response, error = upload_build_code(result.get("code"), website_info)
+
+    if not with_code:
+        result["code"] = "<<code>>"
+
+    if error:
+        result["error"] = str(error)
+        return result
+
+    result["url"] = website_info["linkURL"].format(response)
+
+    return result
+
+
+def create_build(
+    pob: PathOfBuilding,
+    build_name: str = "New AI Build",
+):
+    return load_build(pob, None, build_name)
+
+
+def get_build_folder(
+    pob: PathOfBuilding,
+):
+    result = pob.send_and_wait(
+        json.dumps(
+            {
+                "command": "getBuildFolder",
+            }
+        ),
+    )
+
+    return json.loads(result)
+
+
+def list_build(
+    pob: PathOfBuilding,
+    prefix: str = "",
+    suffix: str = ".xml",
+):
+    res: dict = get_build_folder(pob)
+    save_files = []
+
+    for i in glob.glob(res.get("buildFolder") + prefix + "*" + suffix):
+        save_files.append(i)
+
+    res["buildSaveFiles"] = save_files
+
+    return res

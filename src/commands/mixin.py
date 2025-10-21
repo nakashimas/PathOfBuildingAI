@@ -14,3 +14,30 @@ class CommandMixin:
         build_name: Optional[str],
         file_sub_path: Optional[str],
     ) -> dict: ...
+
+    def download_build(
+        self,
+        link: str,
+        build_name: Optional[str],
+    ) -> dict: ...
+
+    def upload_build(
+        self,
+        website_id: int,
+        with_code: Optional[bool],
+    ) -> dict: ...
+
+    def create_build(
+        self,
+        build_name: Optional[str],
+    ) -> dict: ...
+
+    def get_build_folder(
+        self,
+    ) -> dict: ...
+
+    def list_build(
+        self,
+        prefix: Optional[str],
+        suffix: Optional[str],
+    ) -> dict: ...
