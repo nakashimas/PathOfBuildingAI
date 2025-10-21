@@ -71,6 +71,9 @@ def upload_build(
     website_id: int,
     with_code: bool = False,
 ):
+    if len(WEBSITE_LIST) > website_id:
+        return {"error": "Invalid website id", "_rand": "0", "status": 500}
+
     result = pob.send_and_wait(
         json.dumps(
             {
@@ -80,7 +83,7 @@ def upload_build(
         ),
     )
 
-    result = json.loads(result)
+    result = dict(json.loads(result))
 
     website_info = WEBSITE_LIST[website_id - 1]
     response, error = upload_build_code(result.get("code"), website_info)
