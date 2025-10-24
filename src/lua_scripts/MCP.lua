@@ -128,6 +128,69 @@ function MCP.execute(req)
         end
         response["result"] = searchResultBases
         response["status"] = 200
+    elseif req.command == "listItemUniqueType" then
+        local uniqueTypeList = main.modes["BUILD"].data.uniques
+        local searchResultUniqueTypes = {}
+        for name, _ in pairs(uniqueTypeList) do
+            t_insert(searchResultUniqueTypes, name)
+        end
+        response["result"] = searchResultUniqueTypes
+        response["status"] = 200
+    elseif req.command == "listItemUnique" then
+        local uniqueTypeList = main.modes["BUILD"].data.uniques
+        local uniqueList = uniqueTypeList[req.type]
+        local searchResultUniques = {}
+        for _, raw in ipairs(uniqueList) do
+            local item = new("Item", raw)
+            item:BuildAndParseRaw()
+            t_insert(searchResultUniques, {
+                name = item.name,
+                raw = raw,
+                base = item.baseName,
+                implicit = item.base.implicitModLines,
+                explicit = item.explicitModLines,
+                reqs = item.base.req,
+                tags = item.base.tags,
+                rarity = item.rarity,
+            })
+        end
+        response["result"] = searchResultUniques
+        response["status"] = 200
+    elseif req.command == "listItem" then
+        local itemList = main.modes["BUILD"].itemsTab.items
+        local searchResultItems = {}
+        for selItemId, item in pairs(itemList) do
+            t_insert(searchResultItems, {
+                itemId = selItemId,
+                name = item.name,
+                raw = item.raw,
+                base = item.baseName,
+                implicit = item.base.implicitModLines,
+                -- explicit = item.explicitModLines,
+                reqs = item.base.req,
+                tags = item.base.tags,
+                rarity = item.rarity,
+            })
+        end
+        response["result"] = searchResultItems
+        response["status"] = 200
+    elseif req.command == "listItemSlot" then
+        local slotList = main.modes["BUILD"].itemsTab.slots
+        local searchResultSlots = {}
+        for _, slot in pairs(slotList) do
+            t_insert(searchResultSlots, {
+                name = slot.slotName,
+                active = slot:shown(),
+                itemId = slot.selItemId,
+            })
+        end
+        response["result"] = searchResultSlots
+        response["status"] = 200
+    elseif req.command == "setItemSlot" then
+        local itemSetId = req.itemSetId or main.modes["BUILD"].itemsTab.activeItemSetId or 1
+        local item = main.modes["BUILD"].itemsTab.items[req.itemId]
+        main.modes["BUILD"].itemsTab:EquipItemInSet(item, itemSetId)
+        response["status"] = 200
     elseif req.command == "addItem" then
         local item = new("Item", req.item.raw)
         item:BuildAndParseRaw()
