@@ -32,12 +32,40 @@ class CommandMixin:
         build_name: Optional[str],
     ) -> dict: ...
 
-    def get_build_folder(
-        self,
-    ) -> dict: ...
+    def get_build_folder(self) -> dict: ...
 
     def list_build(
         self,
         prefix: Optional[str],
         suffix: Optional[str],
+    ) -> dict: ...
+
+    def list_item_base_type(self) -> dict: ...
+
+    def list_item_base(
+        self,
+        base_type: str,
+    ) -> dict: ...
+
+    def list_item_unique_type(self) -> dict: ...
+
+    def list_item_unique(
+        self,
+        base_type: str,
+    ) -> dict: ...
+
+    def list_item(self) -> dict: ...
+
+    def list_item_slot(self) -> dict: ...
+
+    def set_item_slot(
+        self,
+        slot_name: str,
+        item_id: int,
+        item_set_id: Optional[int] = 1,
+    ) -> dict: ...
+
+    def add_item(
+        self,
+        raw: str,
     ) -> dict: ...
