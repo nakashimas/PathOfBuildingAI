@@ -69,3 +69,10 @@ class CommandMixin:
         self,
         raw: str,
     ) -> dict: ...
+
+    def list_socket_group(self) -> dict: ...
+
+    def list_socket_group_gem(
+        self,
+        slot_id: str,
+    ) -> dict: ...

@@ -196,6 +196,36 @@ function MCP.execute(req)
         item:BuildAndParseRaw()
         main.modes["BUILD"].itemsTab:AddItem(item, true)
         response["status"] = 200
+    elseif req.command == "listSocketGroup" then
+        local searchResultSocketGroups = {}
+        for slotId, slot in ipairs(main.modes["BUILD"].skillsTab.socketGroupList) do
+            t_insert(searchResultSocketGroups, {
+                slotId = slotId,
+                label = slot.label,
+                source = slot.source,
+                slot = slot.slot,
+                mainActiveSkillId = slot.mainActiveSkill,
+                mainActiveSkillName = slot.gemList[slot.mainActiveSkill or 1].skillId,
+            })
+        end
+        response["result"] = searchResultSocketGroups
+        response["status"] = 200
+    elseif req.command == "listSocketGroupGem" then
+        local gemList = main.modes["BUILD"].skillsTab.socketGroupList[req.slotId or 1].gemList
+        local searchResultSocketGroupGems = {}
+        for gemId, gem in ipairs(gemList) do
+            t_insert(searchResultSocketGroupGems, {
+                gemId = gemId,
+                skillId = gem.skillId,
+                quality = gem.quality,
+                enabled = gem.enabled,
+                level = gem.level,
+                triggered = gem.triggered,
+                explodeSource = gem.explodeSource,
+            })
+        end
+        response["result"] = searchResultSocketGroupGems
+        response["status"] = 200
     end
 
     MCP.respond(response)
