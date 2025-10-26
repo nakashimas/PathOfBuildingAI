@@ -21,3 +21,26 @@ def list_socket_group_gem(
         )
     )
     return json.loads(result)
+
+
+def add_socket_group(
+    pob: PathOfBuilding,
+    label: str = "",
+    slot: str = None,
+    source: str = None,
+    enabled: bool = True,
+    include_in_full_dps: bool = True,
+):
+    result = pob.send_and_wait(
+        json.dumps(
+            {
+                "command": "addSocketGroup",
+                "label": label,
+                "enabled": enabled,
+                "slot": slot,
+                "source": source,
+                "includeInFullDPS": include_in_full_dps,
+            }
+        )
+    )
+    return json.loads(result)

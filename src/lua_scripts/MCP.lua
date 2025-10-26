@@ -67,6 +67,7 @@ function MCP.listenServer()
 
     if not isSuccess then
         local errorResponse = {}
+        errorResponse["status"] = 500
         errorResponse["error"] = response
         MCP.respond(errorResponse)
     end
@@ -199,13 +200,18 @@ function MCP.execute(req)
     elseif req.command == "listSocketGroup" then
         local searchResultSocketGroups = {}
         for slotId, slot in ipairs(main.modes["BUILD"].skillsTab.socketGroupList) do
+            local mainActiveSkillName
+            if #slot.gemList > 0 then
+                mainActiveSkillName = slot.gemList[slot.mainActiveSkill or 1].skillId
+            end
             t_insert(searchResultSocketGroups, {
                 slotId = slotId,
                 label = slot.label,
                 source = slot.source,
                 slot = slot.slot,
+                includeInFullDPS = slot.includeInFullDPS,
                 mainActiveSkillId = slot.mainActiveSkill,
-                mainActiveSkillName = slot.gemList[slot.mainActiveSkill or 1].skillId,
+                mainActiveSkillName = mainActiveSkillName,
             })
         end
         response["result"] = searchResultSocketGroups
@@ -225,6 +231,24 @@ function MCP.execute(req)
             })
         end
         response["result"] = searchResultSocketGroupGems
+        response["status"] = 200
+    elseif req.command == "addSocketGroup" then
+        local skillsTab = main.modes["BUILD"].skillsTab
+        local skillListControl = skillsTab.controls.groupList
+        local newGroup = {
+			label = req.label or "",
+			enabled = req.enabled,
+            source = req.source,
+            slot = req.slot,
+            includeInFullDPS = req.includeInFullDPS,
+			gemList = { }
+		}
+		t_insert(skillListControl.list, newGroup)
+		skillListControl.selIndex = #skillListControl.list
+		skillListControl.selValue = newGroup
+		skillsTab:SetDisplayGroup(newGroup)
+		skillsTab:AddUndoState()
+		skillsTab.build.buildFlag = true
         response["status"] = 200
     end
 

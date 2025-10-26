@@ -76,3 +76,12 @@ class CommandMixin:
         self,
         slot_id: str,
     ) -> dict: ...
+
+    def add_socket_group(
+        self,
+        label: Optional[str],
+        slot: Optional[str],
+        source: Optional[str],
+        enabled: Optional[bool] = True,
+        include_in_full_dps: Optional[bool] = True,
+    ) -> dict: ...
